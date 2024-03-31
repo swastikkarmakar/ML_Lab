@@ -1,0 +1,113 @@
+import numpy as np
+
+# User-defined function for ridge regression (same as before)
+def ridge_regression(X, Y, alpha):
+    n = len(X)
+    X = np.array(X).reshape(n, 1)
+    Y = np.array(Y)
+    
+    X_bias = np.c_[np.ones(n), X]
+    
+    theta = np.linalg.inv(X_bias.T @ X_bias + alpha * np.eye(2)) @ X_bias.T @ Y
+    
+    return theta
+
+# User-defined function for lasso regression (using coordinate descent)
+def lasso_regression(X, Y, alpha, max_iter=100000, tol=1e-6):
+    n = len(X)
+    X = np.array(X).reshape(n, 1)
+    Y = np.array(Y)
+    
+    X_bias = np.c_[np.ones(n), X]
+    theta = np.zeros(2)
+    
+    for _ in range(max_iter):
+        old_theta = theta.copy()
+        
+        for j in range(2):
+            theta_j = theta[j]
+            r = Y - X_bias @ theta + theta_j * X_bias[:, j]
+            theta[j] = np.sum(r * X_bias[:, j]) / (np.sum(X_bias[:, j]**2) + alpha)
+            theta[j] = np.sign(theta[j]) * max(0, abs(theta[j]) - alpha)
+            
+        if np.linalg.norm(theta - old_theta) < tol:
+            break
+    
+    return theta
+
+# User-defined function for elastic net regression (using coordinate descent)
+def elastic_net_regression(X, Y, alpha, l1_ratio, max_iter=100000, tol=1e-6):
+    n = len(X)
+    X = np.array(X).reshape(n, 1)
+    Y = np.array(Y)
+    
+    X_bias = np.c_[np.ones(n), X]
+    theta = np.zeros(2)
+    
+    for _ in range(max_iter):
+        old_theta = theta.copy()
+        
+        for j in range(2):
+            theta_j = theta[j]
+            r = Y - X_bias @ theta + theta_j * X_bias[:, j]
+            ridge_grad = np.sum(r * X_bias[:, j])
+            lasso_grad = alpha * l1_ratio * np.sign(theta[j])
+            theta[j] = (ridge_grad + lasso_grad) / (np.sum(X_bias[:, j]**2) + alpha * (1 - l1_ratio))
+            theta[j] = np.sign(theta[j]) * max(0, abs(theta[j]) - alpha * l1_ratio)
+            
+        if np.linalg.norm(theta - old_theta) < tol:
+            break
+    
+    return theta
+
+# Mean squared error function (same as before)
+def mean_squared_error(X, Y, theta):
+    n = len(X)
+    X = np.array(X).reshape(n, 1)
+    Y = np.array(Y)
+    
+    X_bias = np.c_[np.ones(n), X]
+    y_pred = X_bias @ theta
+    mse = np.mean((Y - y_pred)**2)
+    
+    return mse
+
+# R^2 score function (same as before)
+def r2_score(X, Y, theta):
+    n = len(X)
+    X = np.array(X).reshape(n, 1)
+    Y = np.array(Y)
+    
+    X_bias = np.c_[np.ones(n), X]
+    y_pred = X_bias @ theta
+    ss_res = np.sum((Y - y_pred)**2)
+    ss_tot = np.sum((Y - np.mean(Y))**2)
+    r2 = 1 - (ss_res / ss_tot)
+    
+    return r2
+
+# Given values
+X = [28, 27, 23, 17, 24, 28, 26, 21, 22, 19]
+Y = [63, 49, 43, 36, 39, 51, 66, 36, 31, 37]
+
+# Ridge regression
+alpha = 0.1
+ridge_theta = ridge_regression(X, Y, alpha)
+ridge_mse = mean_squared_error(X, Y, ridge_theta)
+ridge_r2 = r2_score(X, Y, ridge_theta)
+print(f"Ridge Regression:\nTheta: {ridge_theta}\nMean Squared Error: {ridge_mse:.2f}\nR^2 Score: {ridge_r2:.2f}")
+
+# Lasso regression
+alpha = 0.1
+lasso_theta = lasso_regression(X, Y, alpha)
+lasso_mse = mean_squared_error(X, Y, lasso_theta)
+lasso_r2 = r2_score(X, Y, lasso_theta)
+print(f"\nLasso Regression:\nTheta: {lasso_theta}\nMean Squared Error: {lasso_mse:.2f}\nR^2 Score: {lasso_r2:.2f}")
+
+# Elastic net regression
+alpha = 0.1
+l1_ratio = 0.5
+elastic_net_theta = elastic_net_regression(X, Y, alpha, l1_ratio)
+elastic_net_mse = mean_squared_error(X, Y, elastic_net_theta)
+elastic_net_r2 = r2_score(X, Y, elastic_net_theta)
+print(f"\nElastic Net Regression:\nTheta: {elastic_net_theta}\nMean Squared Error: {elastic_net_mse:.2f}\nR^2 Score: {elastic_net_r2:.2f}")

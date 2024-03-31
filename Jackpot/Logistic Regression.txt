@@ -1,0 +1,48 @@
+import numpy as np
+
+# Sigmoid function
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# Mean squared error
+def mean_squared_error(y_true, y_pred):
+    return np.mean((y_true - y_pred)**2)
+
+# Gradient of sigmoid function
+def sigmoid_gradient(x):
+    return sigmoid(x) * (1 - sigmoid(x))
+
+# Logistic regression using batch gradient descent
+def logistic_regression(X, y, learning_rate=0.01, epochs=100):
+    n_samples, n_features = X.shape
+    weights = np.zeros(n_features)
+    bias = 0
+    losses = []
+    for epoch in range(epochs):
+        y_pred = sigmoid(np.dot(X, weights) + bias)
+        loss = mean_squared_error(y, y_pred)
+        losses.append(loss)
+        d_weights = (1 / n_samples) * np.dot(X.T, (y_pred - y) * sigmoid_gradient(y_pred))
+        d_bias = (1 / n_samples) * np.sum((y_pred - y) * sigmoid_gradient(y_pred))
+        weights -= learning_rate * d_weights
+        bias -= learning_rate * d_bias
+        if epoch % 10 == 0:
+            print(f"Epoch {epoch}: Loss={loss}")
+    return weights, bias
+
+# Given data
+X = np.array([[3], [5], [8], [1]])
+y = np.array([0, 1, 1, 0])
+
+# Train logistic regression model
+weights, bias = logistic_regression(X, y, learning_rate=0.01, epochs=100)
+
+# Predict for a new student
+hours_studied = 6
+X_new = np.array([[hours_studied]])
+y_pred = sigmoid(np.dot(X_new, weights) + bias)
+print(f"Predicted probability of passing: {y_pred[0]}")
+if y_pred >= 0.5:
+    print("Prediction: Pass")
+else:
+    print("Prediction: Fail")

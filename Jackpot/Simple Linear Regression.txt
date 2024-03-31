@@ -1,0 +1,20 @@
+# Given data
+X = [28, 27, 23, 17, 24, 28, 26, 21, 22, 19]
+Y = [63, 49, 43, 36, 39, 51, 66, 36, 31, 37]
+
+# Calculate the necessary sums
+sum_X = sum(X)
+sum_Y = sum(Y)
+sum_X_squared = sum(x**2 for x in X)
+sum_XY = sum(x*y for x, y in zip(X, Y))
+n = len(X)
+
+# Calculate a and b
+a = (sum_Y * sum_X_squared - sum_X * sum_XY) / (n * sum_X_squared - sum_X**2)
+b = (n * sum_XY - sum_X * sum_Y) / (n * sum_X_squared - sum_X**2)
+
+# Calculate Y for X = 20
+X_new = 20
+Y_new = a + b * X_new
+
+print("Predicted Y for X = 20:", Y_new)

@@ -1,0 +1,24 @@
+def calculate_mean(data):
+    return sum(data) / len(data)
+
+def calculate_std_dev(data):
+    mean = calculate_mean(data)
+    variance = sum(x**2 for x in data) / len(data) - mean**2
+    std_dev = variance ** 0.5
+    return std_dev
+
+def z_score_normalization(data):
+    mean = calculate_mean(data)
+    std_dev = calculate_std_dev(data)
+    normalized_data = [(x - mean) / std_dev for x in data]
+    return normalized_data
+
+# Given data
+X = [3, 5, 5, 8, 9, 12, 12, 13, 15, 16, 17, 19, 22, 24, 25, 134]
+
+# Perform z-score normalization
+normalized_X = z_score_normalization(X)
+
+# Print normalized data
+print("Original Data:", X)
+print("Normalized Data:", [round(x, 2) for x in normalized_X])

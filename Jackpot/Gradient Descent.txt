@@ -1,0 +1,124 @@
+import numpy as np
+
+# Sigmoid function
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# Mean squared error
+def mean_squared_error(y_true, y_pred):
+    return np.mean((y_true - y_pred)**2)
+
+# Gradient of sigmoid function
+def sigmoid_gradient(x):
+    return sigmoid(x) * (1 - sigmoid(x))
+
+# Batch gradient descent
+def batch_gradient_descent(X, y, learning_rate=0.01, epochs=10):
+    n_samples, n_features = X.shape
+    weights = np.zeros(n_features)
+    bias = 0
+    losses = []
+    accuracies = []
+    for epoch in range(epochs):
+        y_pred = sigmoid(np.dot(X, weights) + bias)
+        loss = mean_squared_error(y, y_pred)
+        accuracy = np.mean((y_pred >= 0.5) == y)
+        losses.append(loss)
+        accuracies.append(accuracy)
+        d_weights = (1 / n_samples) * np.dot(X.T, (y_pred - y) * sigmoid_gradient(y_pred))
+        d_bias = (1 / n_samples) * np.sum((y_pred - y) * sigmoid_gradient(y_pred))
+        weights -= learning_rate * d_weights
+        bias -= learning_rate * d_bias
+        print(f"Epoch {epoch}: Loss={loss}")
+    avg_loss = np.mean(losses)
+    overall_accuracy = np.mean(accuracies)
+    return weights, bias, avg_loss, overall_accuracy
+
+# Mini-batch gradient descent
+def mini_batch_gradient_descent(X, y, batch_size=32, learning_rate=0.01, epochs=10):
+    n_samples, n_features = X.shape
+    weights = np.zeros(n_features)
+    bias = 0
+    losses = []
+    accuracies = []
+    for epoch in range(epochs):
+        for i in range(0, n_samples, batch_size):
+            X_batch = X[i:i+batch_size]
+            y_batch = y[i:i+batch_size]
+            y_pred = sigmoid(np.dot(X_batch, weights) + bias)
+            loss = mean_squared_error(y_batch, y_pred)
+            accuracy = np.mean((y_pred >= 0.5) == y_batch)
+            losses.append(loss)
+            accuracies.append(accuracy)
+            d_weights = (1 / batch_size) * np.dot(X_batch.T, (y_pred - y_batch) * sigmoid_gradient(y_pred))
+            d_bias = (1 / batch_size) * np.sum((y_pred - y_batch) * sigmoid_gradient(y_pred))
+            weights -= learning_rate * d_weights
+            bias -= learning_rate * d_bias
+            print(f"Epoch {epoch}: Loss={loss}")
+    avg_loss = np.mean(losses)
+    overall_accuracy = np.mean(accuracies)
+    return weights, bias, avg_loss, overall_accuracy
+
+# Stochastic gradient descent
+def stochastic_gradient_descent(X, y, learning_rate=0.01, epochs=10):
+    n_samples, n_features = X.shape
+    weights = np.zeros(n_features)
+    bias = 0
+    losses = []
+    accuracies = []
+    for epoch in range(epochs):
+        epoch_loss = 0
+        epoch_accuracy = 0
+        for i in range(n_samples):
+            X_sample = X[i]
+            y_sample = y[i]
+            y_pred = sigmoid(np.dot(X_sample, weights) + bias)
+            loss = mean_squared_error(y_sample, y_pred)
+            accuracy = (y_pred >= 0.5) == y_sample
+            epoch_loss += loss
+            epoch_accuracy += accuracy
+            d_weights = np.dot(X_sample.T, (y_pred - y_sample) * sigmoid_gradient(y_pred))
+            d_bias = (y_pred - y_sample) * sigmoid_gradient(y_pred)
+            weights -= learning_rate * d_weights
+            bias -= learning_rate * d_bias
+        epoch_loss /= n_samples
+        epoch_accuracy /= n_samples
+        losses.append(epoch_loss)
+        accuracies.append(epoch_accuracy)
+        print(f"Epoch {epoch}: Loss={epoch_loss}")
+    avg_loss = np.mean(losses)
+    overall_accuracy = np.mean(accuracies)
+    return weights, bias, avg_loss, overall_accuracy
+
+# Given data
+X1 = np.array([4, 16, 9]).reshape(-1, 1)
+X2 = np.array([1, 2, 1]).reshape(-1, 1)
+X = np.concatenate((X1, X2), axis=1)
+y = np.array([1, 1, 0])
+
+# Train using batch gradient descent
+weights_batch, bias_batch, avg_loss_batch, overall_accuracy_batch = batch_gradient_descent(X, y, learning_rate=0.01, epochs=10)
+print("\nBatch Gradient Descent:")
+print("Weights:", weights_batch)
+print("Bias:", bias_batch)
+print("MSE:", avg_loss_batch)
+print("Overall Accuracy:", overall_accuracy_batch)
+print('\n')
+
+# Train using mini-batch gradient descent
+weights_mini_batch, bias_mini_batch, avg_loss_mini_batch, overall_accuracy_mini_batch = mini_batch_gradient_descent(X, y, batch_size=32, learning_rate=0.01, epochs=10)
+print("\nMini-Batch Gradient Descent:")
+print("Weights:", weights_mini_batch)
+print("Bias:", bias_mini_batch)
+print("MSE:", avg_loss_mini_batch)
+print("Overall Accuracy:", overall_accuracy_mini_batch)
+print('\n')
+
+# Train using stochastic gradient descent
+weights_stochastic, bias_stochastic, avg_loss_stochastic, overall_accuracy_stochastic = stochastic_gradient_descent(X, y, learning_rate=0.01, epochs=10)
+print("\nStochastic Gradient Descent:")
+print("Weights:", weights_stochastic)
+print("Bias:", bias_stochastic)
+print("MSE:", avg_loss_stochastic)
+print("Overall Accuracy:", overall_accuracy_stochastic)
+print('\n')

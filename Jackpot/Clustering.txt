@@ -1,0 +1,55 @@
+import numpy as np
+import random
+
+def euclidean_distance(p1, p2):
+    return np.sqrt(np.sum((p1 - p2)**2))
+
+def initialize_centroids(X, k):
+    indices = random.sample(range(len(X)), k)
+    centroids = X[indices]
+    return centroids
+
+def assign_to_clusters(X, centroids):
+    clusters = np.zeros(len(X))
+    for i, x in enumerate(X):
+        distances = [euclidean_distance(x, centroid) for centroid in centroids]
+        cluster = np.argmin(distances)
+        clusters[i] = cluster
+    return clusters
+
+def update_centroids(X, clusters, k):
+    centroids = np.zeros((k, X.shape[1]))
+    for cluster in range(k):
+        cluster_points = X[clusters == cluster]
+        centroids[cluster] = np.mean(cluster_points, axis=0)
+    return centroids
+
+def kmeans(X, k, max_iterations=100):
+    centroids = initialize_centroids(X, k)
+    for _ in range(max_iterations):
+        clusters = assign_to_clusters(X, centroids)
+        new_centroids = update_centroids(X, clusters, k)
+        if np.all(centroids == new_centroids):
+            break
+        centroids = new_centroids
+    return clusters, centroids
+
+# Given data
+X1 = np.array([2, 2, 8, 5, 7, 6, 1, 4]).reshape(-1, 1)
+X2 = np.array([10, 5, 4, 8, 5, 4, 2, 9]).reshape(-1, 1)
+X = np.concatenate((X1, X2), axis=1)
+
+# Number of clusters
+k = 3
+
+# Perform K-means clustering
+clusters, centroids = kmeans(X, k)
+
+# Print final cluster assignments and centroids
+print("Final Cluster Assignments:")
+for i in range(k):
+    cluster_points = X[clusters == i]
+    print(f"Cluster {i+1}: {cluster_points}")
+
+print("\nFinal Centroids:")
+print(centroids)
